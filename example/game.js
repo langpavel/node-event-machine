@@ -1,4 +1,5 @@
-import {State, StateMachine} from '../src/stateMachine';
+import State from '../src/state';
+import StateMachine from '../src/stateMachine';
 
 
 class LoggingState extends State {
