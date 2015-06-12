@@ -1,11 +1,12 @@
 # node-state-machine
 
-Object Oriented ES6 state machine supporting timeout transitions
+Object Oriented ES6 state machine with promises supporting timeout transitions
 
 
 ## Example:
 
 ```js
+import Promise from 'bluebird';
 import State from '../src/state';
 import StateMachine from '../src/stateMachine';
 
@@ -46,7 +47,7 @@ class A extends LoggingState {
 
     transitionA(data) {
         this.log('A -> A ...', data);
-        return A;
+        return Promise.resolve(A);
     }
 
     transitionB() {
@@ -69,14 +70,41 @@ class B extends LoggingState {
 }
 
 
-class GameEnd extends LoggingState { }
+class GameEnd extends LoggingState {}
+
 
 const machine = new StateMachine(A);
 
-machine.transition('transitionA', 'data1');
-machine.transition('transitionA');
-machine.transition('transitionB', 'data2');
-machine.transition('transitionA', 'data3');
-machine.transition('transitionB');
-machine.transition('transitionA');
+machine.transition('transitionA', 'data1').then((state) => {
+    console.log(`Transition done, state ${state}`);
+    return machine.transition('transitionB', 'data2');
+}).then((state) => {
+    console.log(`Transition done, state ${state}`);
+    return machine.transition('transitionA', 'data3');
+}).then((state) => {
+    console.log(`Transition done, state ${state}`);
+    return machine.transition('transitionA', 'data4');
+});
+```
+
+Code above outputs this:
+
+```
+[state A {"i":1}] entered
+[state A {"i":1,"$timeouted":0}] A -> A ... data1
+[state A {"i":2,"$timeouted":0}] entered
+Transition done, state [state A {"i":2,"$timeouted":0}]
+[state A {"i":2,"$timeouted":0}] A -> B ...
+[state B {}] entered
+[state A {"i":2,"$timeouted":0}] destroyed
+Transition done, state [state B {}]
+[state B {}] B -> A ... data3
+[state B {}] leaved
+[state A {"i":1}] entered
+Transition done, state [state A {"i":1,"$timeouted":0}]
+[state A {"i":1,"$timeouted":0}] A -> A ... data4
+[state A {"i":2,"$timeouted":0}] entered
+... after 5 seconds
+[state GameEnd {}] entered
+[state A {"i":2,"$timeouted":1434098785003}] destroyed
 ```

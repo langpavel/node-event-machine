@@ -35,7 +35,8 @@ export default class State {
     }
 
     $timeout(newStateClass, timeout, strict = false) {
-        return this.$machine.timeoutTransition_(newStateClass, timeout, strict);
+        this.$timeouted = 0;
+        return this.$machine.timeoutTransition_(this, newStateClass, timeout, strict);
     }
 
     $clearTimeout() {

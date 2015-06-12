@@ -1,5 +1,4 @@
-jest.dontMock('../state');
-jest.dontMock('../stateMachine');
+jest.autoMockOff();
 
 const State = require('../state');
 const StateMachine = require('../stateMachine');

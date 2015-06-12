@@ -1,5 +1,6 @@
 
 import Promise from 'bluebird';
+import {RaceConditionError, TimeoutError} from './errors';
 
 export default class StateMachine {
 
@@ -7,6 +8,10 @@ export default class StateMachine {
         this.context = context || {};
         this.states_ = {};
         Object.defineProperty(this, 'pendingTimeout_', {
+            value: null,
+            writable: true
+        });
+        Object.defineProperty(this, 'pendingTransitionPromise_', {
             value: null,
             writable: true
         });
@@ -47,6 +52,10 @@ export default class StateMachine {
     }
 
     transition(name, ...args) {
+        if (this.pendingTransition)
+            throw new RaceConditionError(
+                `Trying to enter transition '${name}' while '${this.pendingTransition}' in progress`);
+
         this.pendingTransition = name;
         var newState;
         if (typeof this.state[name] === 'function') {
@@ -59,10 +68,21 @@ export default class StateMachine {
 
         const looksLikePromise = newState && typeof newState.then === 'function';
         if (looksLikePromise) {
-            this.clearTimeoutTransition_(false);
+            this.pendingTransitionPromise_ = newState;
+            // const cancellable = newState.isCancellable && newState.isCancellable();
+            this.clearTimeoutTransition_(true);
+            const oldState = this.state;
+            const oldStateStr = this.state.toString();
             return newState.then((state) => {
-                this.clearTimeoutTransition_(true);
-                return Promise.resolve(this.doTransition_(newState));
+                if (this.pendingTransitionPromise_.timeouted_) {
+                    throw new TimeoutError(`Timeout transition '${name}' from ${oldStateStr}`);
+                }
+                this.pendingTransitionPromise_ = null;
+                this.clearTimeoutTransition_(false);
+                if (oldState !== this.state) {
+                    throw new RaceConditionError(`Race condition: Old ${oldStateStr} != ${this.state}`);
+                }
+                return Promise.resolve(this.doTransition_(state));
             });
         } else {
             this.clearTimeoutTransition_();
@@ -79,12 +99,21 @@ export default class StateMachine {
         }
     }
 
-    timeoutTransition_(newStateClass, timeout, strict = false) {
+    timeoutTransition_(oldState, newStateClass, timeout, strict = false) {
         if (this.pendingTimeout_)
             throw new Error('Timeout transition is already pending');
 
         const handle = setTimeout(() => {
+            const now = Date.now();
+            oldState.$timeouted = now;
             this.pendingTimeout_ = null;
+            if (this.pendingTransitionPromise_) {
+                if (strict) {
+                    this.pendingTransitionPromise_.timeouted_ = now;
+                    this.doTransition_(newStateClass);
+                    return;
+                }
+            }
             this.doTransition_(newStateClass);
         }, timeout);
 

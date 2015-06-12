@@ -1,3 +1,7 @@
+/*eslint-disable no-console */
+/*eslint-disable no-use-before-define */
+
+import Promise from 'bluebird';
 import State from '../src/state';
 import StateMachine from '../src/stateMachine';
 
@@ -38,7 +42,7 @@ class A extends LoggingState {
 
     transitionA(data) {
         this.log('A -> A ...', data);
-        return A;
+        return Promise.resolve(A);
     }
 
     transitionB() {
@@ -61,22 +65,18 @@ class B extends LoggingState {
 }
 
 
-class GameEnd extends LoggingState {
-
-}
+class GameEnd extends LoggingState {}
 
 
 const machine = new StateMachine(A);
 
-
-
-machine.transition('transitionA', 'data1');
-machine.transition('transitionA');
-machine.transition('transitionA');
-machine.transition('transitionB', 'data2');
-machine.transition('transitionA', 'data3');
-machine.transition('transitionB');
-machine.transition('transitionB');
-machine.transition('transitionA');
-
-console.log(JSON.stringify(machine, null, 2))
+machine.transition('transitionA', 'data1').then((state) => {
+    console.log(`Transition done, state ${state}`);
+    return machine.transition('transitionB', 'data2');
+}).then((state) => {
+    console.log(`Transition done, state ${state}`);
+    return machine.transition('transitionA', 'data3');
+}).then((state) => {
+    console.log(`Transition done, state ${state}`);
+    return machine.transition('transitionA', 'data4');
+});

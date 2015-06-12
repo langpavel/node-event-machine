@@ -1,9 +1,12 @@
 {
   "name": "event-machine",
-  "version": "0.0.1",
-  "description": "Object Oriented ES6 state machine supporting timeout transitions",
+  "version": "0.0.2",
+  "description": "Object Oriented ES6 state machine with promises supporting timeout transitions",
   "keywords": [
-    "ES6", "state machine", "event machine"
+    "ES6",
+    "state machine",
+    "event machine",
+    "asynchronous"
   ],
   "main": "src/index.js",
   "scripts": {
@@ -19,6 +22,7 @@
     "babel-eslint": "^3.1.15",
     "babel-jest": "^5.2.0",
     "eslint": "^0.22.1",
+    "jest": "^0.1.40",
     "jest-cli": "^0.4.11"
   },
   "jest": {
