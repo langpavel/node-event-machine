@@ -22,6 +22,9 @@ export default class StateMachine {
     }
 
     getState(StateConstructor, forceNew = false) {
+        if (StateConstructor === null)
+            return this.state;
+
         if (typeof StateConstructor !== 'function')
             throw new Error('StateMachine.getState accept only State class');
 
