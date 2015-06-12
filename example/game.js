@@ -29,6 +29,7 @@ class A extends LoggingState {
     $onStateEnter(oldStateClass, oldStateInstance) {
         this.i++;
         super.$onStateEnter(oldStateClass, oldStateInstance);
+        this.$timeout(GameEnd, 5000);
     }
 
     $onStateLeave(newStateClass, newStateInstance) {
@@ -57,6 +58,11 @@ class B extends LoggingState {
         this.log('B -> B ...');
         return B;
     }
+}
+
+
+class GameEnd extends LoggingState {
+
 }
 
 

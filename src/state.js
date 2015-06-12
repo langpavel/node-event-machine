@@ -30,8 +30,20 @@ export default class State {
         return null;
     }
 
+    $getContext() {
+        return this.$machine.context;
+    }
+
+    $timeout(newStateClass, timeout, strict = false) {
+        return this.$machine.timeoutTransition_(newStateClass, timeout, strict);
+    }
+
+    $clearTimeout() {
+        return this.$machine.clearTimeoutTransition_(false);
+    }
+
     toString() {
-        //return `[state ${this.constructor.name} ${JSON.stringify(this)}]`;
+        return `[state ${this.constructor.name} ${JSON.stringify(this)}]`;
     }
 
 }

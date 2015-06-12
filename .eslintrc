@@ -1,6 +1,10 @@
 {
+  "globals": {
+    "jest": true
+  },
   "parser": "babel-eslint",
   "env" : {
+    "jasmine": true,
     "node": true
   },
   "rules": {

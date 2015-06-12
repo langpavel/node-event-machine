@@ -1,8 +1,16 @@
 
+import Promise from 'bluebird';
+
 export default class StateMachine {
 
-    constructor(InitialState) {
-        this.states = {};
+    constructor(InitialState, context) {
+        this.context = context || {};
+        this.states_ = {};
+        Object.defineProperty(this, 'pendingTimeout_', {
+            value: null,
+            writable: true
+        });
+        this.pendingTransition = null;
         this.state = this.getState(InitialState);
         if (this.state.$onStateEnter)
           this.state.$onStateEnter(null, null);
@@ -14,16 +22,16 @@ export default class StateMachine {
 
         const name = StateConstructor.name;
 
-        if (!forceNew && this.states[name])
-            return this.states[name];
+        if (!forceNew && this.states_[name])
+            return this.states_[name];
 
         const newState = new StateConstructor(this);
         if (newState.$machine !== this)
             throw new Error(`Please call super($machine) in constructor of '${name}'`);
 
-        this.states[name] = newState;
+        this.states_[name] = newState;
 
-        return this.states[name];
+        return this.states_[name];
     }
 
     releaseState(StateConstructor) {
@@ -32,13 +40,14 @@ export default class StateMachine {
 
         const name = StateConstructor.name;
 
-        if (this.states[name]) {
-            if (this.states[name].$destroy) this.states[name].$destroy();
-            this.states[name] = null;
+        if (this.states_[name]) {
+            if (this.states_[name].$destroy) this.states_[name].$destroy();
+            this.states_[name] = null;
         }
     }
 
     transition(name, ...args) {
+        this.pendingTransition = name;
         var newState;
         if (typeof this.state[name] === 'function') {
             newState = this.state[name](...args);
@@ -50,15 +59,39 @@ export default class StateMachine {
 
         const looksLikePromise = newState && typeof newState.then === 'function';
         if (looksLikePromise) {
+            this.clearTimeoutTransition_(false);
             return newState.then((state) => {
-                return Promise.resolve(this.setState_(newState));
+                this.clearTimeoutTransition_(true);
+                return Promise.resolve(this.doTransition_(newState));
             });
         } else {
-            return Promise.resolve(this.setState_(newState));
+            this.clearTimeoutTransition_();
+            return Promise.resolve(this.doTransition_(newState));
         }
     }
 
-    setState_(newStateClass) {
+    clearTimeoutTransition_(onlyStrict) {
+        if (this.pendingTimeout_) {
+            if (onlyStrict && !this.pendingTimeout_.strict)
+                return;
+            clearTimeout(this.pendingTimeout_.handle);
+            this.pendingTimeout_ = null;
+        }
+    }
+
+    timeoutTransition_(newStateClass, timeout, strict = false) {
+        if (this.pendingTimeout_)
+            throw new Error('Timeout transition is already pending');
+
+        const handle = setTimeout(() => {
+            this.pendingTimeout_ = null;
+            this.doTransition_(newStateClass);
+        }, timeout);
+
+        this.pendingTimeout_ = {strict, handle};
+    }
+
+    doTransition_(newStateClass) {
         const oldState = this.state;
         const oldStateClass = oldState ? oldState.constructor : null;
         const newState = this.getState(newStateClass);
@@ -75,6 +108,7 @@ export default class StateMachine {
             newState.$onStateEnter(oldStateClass, oldState);
         }
 
+        this.pendingTransition = null;
         if (release) this.releaseState(oldStateClass);
         return this.state;
     }

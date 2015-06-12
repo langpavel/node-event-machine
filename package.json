@@ -1,18 +1,41 @@
 {
   "name": "state-machine",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
     "test": "jest"
   },
   "author": "Pavel Lang <langpavel@phpskelet.org>",
   "license": "ISC",
+  "dependencies": {
+    "bluebird": "^2.9.27"
+  },
   "devDependencies": {
     "babel": "^5.5.6",
     "babel-eslint": "^3.1.15",
     "babel-jest": "^5.2.0",
     "eslint": "^0.22.1",
     "jest-cli": "^0.4.11"
+  },
+  "jest": {
+    "rootDir": "",
+    "scriptPreprocessor": "jest/preprocessor.js",
+    "setupEnvScriptFile": "jest/environment.js",
+    "persistModuleRegistryBetweenSpecs": true,
+    "testFileExtensions": [
+      "js"
+    ],
+    "modulePathIgnorePatterns": [
+      "/external/",
+      "/node_modules/",
+      "/.module-cache/"
+    ],
+    "testPathDirs": [
+      "<rootDir>/src"
+    ],
+    "unmockedModulePathPatterns": [
+      ""
+    ]
   }
 }
