@@ -1,13 +1,13 @@
 {
-  "name": "state-machine",
+  "name": "event-machine",
   "version": "0.0.1",
   "description": "Object Oriented ES6 state machine supporting timeout transitions",
   "keywords": [
-    "ES6", "state machine"
+    "ES6", "state machine", "event machine"
   ],
   "main": "src/index.js",
   "scripts": {
-    "test": "jest"
+    "test": "eslint src && jest"
   },
   "author": "Pavel Lang <langpavel@phpskelet.org>",
   "license": "ISC",
