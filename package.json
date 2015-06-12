@@ -1,7 +1,10 @@
 {
   "name": "state-machine",
   "version": "0.0.1",
-  "description": "",
+  "description": "Object Oriented ES6 state machine supporting timeout transitions",
+  "keywords": [
+    "ES6", "state machine"
+  ],
   "main": "src/index.js",
   "scripts": {
     "test": "jest"
