@@ -1,7 +1,12 @@
-# node-state-machine
+# event-machine
 
 Object Oriented ES6 state machine with promises supporting timeout transitions
 
+## Install
+
+```
+npm install event-machine
+```
 
 ## Example:
 
