@@ -64,7 +64,10 @@ export default class StateMachine {
         if (typeof this.state[name] === 'function') {
             newState = this.state[name](...args);
         } else {
-            newState = this.state.$transition(name, ...args);
+            if (!this.state.$onTransition)
+                throw new Error(`State has no transition function '${name}'`);
+
+            newState = this.state.$onTransition(name, ...args);
             if (!newState)
                 throw new Error(`State has no transition function '${name}'`);
         }

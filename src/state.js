@@ -25,7 +25,7 @@ export default class State {
         return false;
     }
 
-    $transition(name, ...args) {
+    $onTransition(name, ...args) {
         if (typeof this[name] === 'function') return this[name](...args);
         return null;
     }
