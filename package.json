@@ -29,7 +29,6 @@
     "babel-eslint": "^3.1.15",
     "babel-jest": "^5.2.0",
     "eslint": "^0.22.1",
-    "jest": "^0.1.40",
     "jest-cli": "^0.4.11"
   },
   "jest": {
